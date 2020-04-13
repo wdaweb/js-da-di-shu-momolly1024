@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+
+    <style>
+      body {
+        background: #5c4b4b;
+        background-image: url(./dog.gif);
+        background-repeat: repeat-x;
+        background-position: center 350px;
+        font-family: 微軟正黑體;
+        font-weight: bolder;
+      }
+
+      .hole {
+        width: 100px;
+        height: 95px;
+        background: white;
+        box-shadow: rgb(84, 83, 90) 5px 5px;
+        border-radius: 50%;
+
+        /* cursor: url(./cursor.png) 50 50, auto; */
+      }
+
+      .hole:hover {
+        box-shadow: rgb(141, 144, 158) 0px 0 0 10px;
+        border-radius: 0px;
+        /* cursor: url(./cursor.png) 50 50, auto; */
+      }
+
+      .box {
+        border: 2px black solid;
+        width: 250px;
+      }
+
+      #btn-start {
+        font-size: 30px;
+        border-radius: 50px;
+        padding: 10px;
+        /* margin: 10px; */
+        font-weight: bolder;
+        box-shadow: rgb(84, 83, 90) 5px 5px;
+        margin-left: auto;
+        margin-right: auto;
+        display: block;
+        margin-top: 20px;
+      }
+
+      #btn-start:hover {
+        color: rgb(255, 255, 255);
+        font-weight: bolder;
+        box-shadow: rgb(0, 0, 0) 10px 10px;
+        cursor: pointer;
+        background-color: rgb(255, 25, 0);
+      }
+
+      .big {
+        width: 400px;
+        border: solid black 5px;
+        padding: 10px;
+        margin-left: auto;
+        margin-right: auto;
+        font-size: 20px;
+        background-color: #eee;
+        box-shadow: rgb(84, 83, 90) 5px 5px;
+        margin-top: 20px;
+      }
+
+      /* .big:hover {
+      box-shadow: rgb(246, 3, 3) 0px 0 0 10px;
+    } */
+
+      .direction7 {
+        background-image: url("./lefttop2.png");
+      }
+
+      .direction8 {
+        background-image: url("./top.png");
+      }
+
+      .direction9 {
+        background-image: url("./righttop.png");
+      }
+
+      .direction4 {
+        background-image: url("./left.png");
+      }
+
+      .direction5 {
+        background-image: url("./center.png");
+      }
+
+      .direction6 {
+        background-image: url("./right.png");
+      }
+
+      .direction1 {
+        background-image: url("./leftbottom.png");
+      }
+
+      .direction2 {
+        background-image: url("./bottom.png");
+      }
+
+      .direction3 {
+        background-image: url("./rightbottom.png");
+      }
+
+      .red {
+        /* background: red; */
+        border-radius: 50%;
+        border: none;
+        transform: translate(0px, -15px);
+        box-shadow: rgb(0, 0, 0) 5px 10px;
+      }
+
+      .blue {
+        background: #5c4b4b;
+        border-radius: 50%;
+      }
+
+      table {
+        margin-left: auto;
+        margin-right: auto;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="big">
+      <p>
+        請使用數字鍵進行挑戰<br />
+        ↙為1、↓為2、↘為3、←為4、5則點擊5、→為6、↖為7、↑為8、↗為9<br />
+      </p>
+    </div>
+    <input type="button" value="START" id="btn-start" /> <br />
+    <table id="game">
+      <tr>
+        <td class="hole direction7" id="hole7"></td>
+        <td class="hole direction8" id="hole8"></td>
+        <td class="hole direction9" id="hole9"></td>
+
+        <td class="hole direction4" id="hole4"></td>
+        <td class="hole direction5" id="hole5"></td>
+        <td class="hole direction6" id="hole6"></td>
+
+        <td class="hole direction1" id="hole1"></td>
+        <td class="hole direction2" id="hole2"></td>
+        <td class="hole direction3" id="hole3"></td>
+      </tr>
+    </table>
+
+    <div class="big">
+      目前分數: <span id="text-score">0</span> 剩餘時間:
+      <span id="text-time">10</span>
+      <br />
+      最高分: <br />
+      玩家: <span id="text-highplayer">沒有人</span> <br />
+      分數: <span id="text-highscore">0</span>
+    </div>
+
+    <script>
+      const holes = document.getElementsByClassName("hole");
+      const btnStart = document.getElementById("btn-start");
+      const textScore = document.getElementById("text-score");
+      const textTime = document.getElementById("text-time");
+      const textHighPlayer = document.getElementById("text-highplayer");
+      const textHighScore = document.getElementById("text-highscore");
+      const rihai = new Audio();
+      rihai.src = "./rihai.mp3";
+
+      // 分數
+      let score = 0;
+      // 是否在遊戲中
+      let inGame = false;
+      // 剩餘秒數
+      let timeleft = 20;
+      // 計時器
+      let timer = 0;
+      // 最高分
+      let highscore = { name: "", score: 0 };
+      // 將 localStorage 存的文字轉成可以使用的陣列
+      let storage = JSON.parse(localStorage.getItem("highscore"));
+      // 如果有分數紀錄
+
+      const music = new Audio();
+      music.src = "./music.mp3";
+
+      if (storage != null) {
+        // 將最高分記錄存入變數並修改網頁文字
+        highscore.name = storage.name;
+        textHighPlayer.innerText = highscore.name;
+        highscore.score = storage.score;
+        textHighScore.innerText = highscore.score;
+      }
+
+      btnStart.onclick = () => {
+        music.play();
+        // 停用開始按鈕
+        btnStart.disabled = true;
+        // 設定每秒變換一次
+        timer = setInterval(game, 1000);
+        game();
+        // 重置分數
+        score = 0;
+        textScore.innerText = score;
+        // 設定狀態為遊戲中
+        inGame = true;
+        // 重設時間
+        timeleft = 20;
+        textTime.innerText = timeleft;
+      };
+
+      const game = () => {
+        // 清掉格子的 class
+        for (let hole of holes) {
+          hole.classList.remove("red");
+          hole.classList.remove("blue");
+        }
+
+        // 隨機抽三格，變紅色
+        for (let i = 0; i < 3; i++) {
+          const rand = Math.floor(Math.random() * 9);
+          holes[rand].classList.add("red");
+        }
+
+        // 時間減一
+        timeleft--;
+        textTime.innerText = timeleft;
+
+        // 如果時間到了
+        if (timeleft == 0) {
+          // 設定狀態為不在遊戲中
+          inGame = false;
+          // 停止計時器
+          clearInterval(timer);
+          // 清掉格子的 class
+          for (let hole of holes) {
+            hole.classList.remove("red");
+            hole.classList.remove("blue");
+          }
+          // 啟用開始按鈕
+          btnStart.disabled = false;
+          alert(`你得到 ${score} 分`);
+
+          // 如果沒有分數紀錄，或是大於目前分數
+          if (storage == null || score > highscore.score) {
+            // rihai.play();
+            // 輸入名字
+            const input = prompt("恭喜最高分，請輸入名字");
+            // 如果有輸入
+            if (input != null && input.trim() != "") {
+              // 將輸入的名字與分數存入變數
+              highscore.score = score;
+              highscore.name = input;
+              // 修改最高分文字
+              textHighPlayer.innerText = highscore.name;
+              textHighScore.innerText = highscore.score;
+              // 將最高分變數轉文字後存入 localStorage
+              localStorage.setItem("highscore", JSON.stringify(highscore));
+            }
+          }
+        }
+      };
+
+      for (let hole of holes) {
+        hole.onclick = () => {
+          // 如果在遊戲中且包含 red
+          if (inGame && hole.classList.contains("red")) {
+            // 標記為按下去
+            hole.classList.add("blue");
+            hole.classList.remove("red");
+            // 加一分
+            score++;
+            textScore.innerText = score;
+          }
+        };
+      }
+
+      document.onkeydown = (event) => {
+        const key = event.key;
+        // 如果按鍵式數字，且在遊戲中，數字為 1~9
+        if (!isNaN(key) && inGame && key > 0 && key < 10) {
+          // 找到對應的格子
+          const target = document.getElementById(`hole${key}`);
+          // 觸發點擊事件
+          target.click();
+        }
+      };
+    </script>
+  </body>
+</html>
